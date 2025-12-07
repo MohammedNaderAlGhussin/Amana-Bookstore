@@ -1,7 +1,10 @@
-import { MongoClient } from "mongodb";
+// /src/lib/mongodb.ts
+import { MongoClient, MongoClientOptions } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
-const options = {};
+
+// Explicitly type options
+const options: MongoClientOptions = {};
 
 if (!uri) {
   throw new Error("Missing MONGODB_URI in environment variables");
