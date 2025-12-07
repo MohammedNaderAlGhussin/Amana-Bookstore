@@ -1,8 +1,6 @@
 export const getBooks = async () => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/books`
-    );
+    const response = await fetch(`/api/books`);
     const data = await response.json();
     return data;
   } catch (error) {
@@ -15,7 +13,7 @@ export const getBooks = async () => {
 export async function getBook(id: string) {
   if (!id) throw new Error("Book ID is required");
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/books/${id}`);
+  const res = await fetch(`/api/books/${id}`);
 
   if (!res.ok) {
     throw new Error(`Failed to fetch book: ${res.statusText}`);
