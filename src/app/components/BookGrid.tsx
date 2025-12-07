@@ -1,18 +1,18 @@
 // src/app/components/BookGrid.tsx
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Book } from "../types";
 import BookCard from "./BookCard";
 import BookListItem from "./BookListItem";
 import Pagination from "./Pagination";
+import { getBooks } from "./../../services/bookService";
 
 interface BookGridProps {
-  books: Book[];
   onAddToCart?: (bookId: string) => void;
 }
 
-const BookGrid: React.FC<BookGridProps> = ({ books, onAddToCart }) => {
+const BookGrid: React.FC<BookGridProps> = ({ onAddToCart }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [sortBy, setSortBy] = useState("title");
@@ -20,7 +20,17 @@ const BookGrid: React.FC<BookGridProps> = ({ books, onAddToCart }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const [featuredCarouselIndex, setFeaturedCarouselIndex] = useState(0);
+  const [books, setBooks] = useState<Book[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getBooks();
+      setBooks(data);
+    };
 
+    fetchData();
+  }, []);
+
+  console.log(books);
   // Memoize featured books to prevent re-calculation on every render
   const featuredBooks = useMemo(
     () => books.filter((book) => book.featured),
