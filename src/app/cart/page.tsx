@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import CartItem from '../components/CartItem';
-import { books } from '../data/books';
 import { Book, CartItem as CartItemType } from '../types';
 
 export default function CartPage() {
@@ -12,25 +11,47 @@ export default function CartPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load cart from localStorage
-    const storedCart = localStorage.getItem('cart');
-    if (storedCart) {
-      try {
-        const cart: CartItemType[] = JSON.parse(storedCart);
-        const itemsWithBooks = cart
-          .map(item => {
-            const book = books.find(b => b.id === item.bookId);
-            return book ? { book, quantity: item.quantity } : null;
-          })
-          .filter((item): item is { book: Book; quantity: number } => item !== null);
-        
-        setCartItems(itemsWithBooks);
-      } catch (error) {
-        console.error('Failed to parse cart from localStorage', error);
-        setCartItems([]);
+    const loadCart = async () => {
+      // Load cart from localStorage
+      const storedCart = localStorage.getItem('cart');
+      if (storedCart) {
+        try {
+          const cart: CartItemType[] = JSON.parse(storedCart);
+          
+          if (cart.length === 0) {
+            setCartItems([]);
+            setIsLoading(false);
+            return;
+          }
+
+          const bookIds = Array.from(new Set(cart.map(item => item.bookId)));
+          const queryParams = new URLSearchParams({ ids: bookIds.join(',') });
+          
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/books?${queryParams}`);
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch books');
+          }
+          
+          const booksData: Book[] = await response.json();
+          
+          const itemsWithBooks = cart
+            .map(item => {
+              const book = booksData.find(b => b.id === item.bookId);
+              return book ? { book, quantity: item.quantity } : null;
+            })
+            .filter((item): item is { book: Book; quantity: number } => item !== null);
+          
+          setCartItems(itemsWithBooks);
+        } catch (error) {
+          console.error('Failed to parse cart or fetch books', error);
+          setCartItems([]);
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+
+    loadCart();
   }, []);
 
   const updateQuantity = (bookId: string, newQuantity: number) => {
