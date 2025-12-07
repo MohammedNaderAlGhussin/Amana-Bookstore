@@ -2,7 +2,6 @@
 "use client";
 
 import BookGrid from "./components/BookGrid";
-import { books } from "./data/books";
 
 export default function HomePage() {
   // Simple cart handler for demo purposes
@@ -25,7 +24,7 @@ export default function HomePage() {
       </section>
 
       {/* Book Grid */}
-      <BookGrid books={books} onAddToCart={handleAddToCart} />
+      <BookGrid onAddToCart={handleAddToCart} />
     </div>
   );
 }
