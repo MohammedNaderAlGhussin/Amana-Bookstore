@@ -1,13 +1,13 @@
 // /src/app/api/books/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await context.params; // <-- Next.js 16 requires await
 
   if (!id) {
     return NextResponse.json({ error: "Book ID is required" }, { status: 400 });
@@ -15,12 +15,12 @@ export async function GET(
 
   try {
     const client = await clientPromise;
-    const db = client.db("bookStore"); // Make sure this matches your MongoDB DB name
+    const db = client.db("bookStore"); // make sure DB name is correct
 
     // Try to find by string ID first (as in the JSON data)
     let book = await db.collection("books").findOne({ id: id });
 
-    // If not found and id is valid ObjectId, try that
+    // If not found and the id is an ObjectId, try that
     if (!book && ObjectId.isValid(id)) {
       book = await db.collection("books").findOne({ _id: new ObjectId(id) });
     }
